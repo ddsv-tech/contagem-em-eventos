@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contagem em Eventos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f6f5e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Eventos">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--mute:#6b6a66;--line:#e2e0da;--accent:#2f6f5e;--accent-ink:#fff;--field:#f6f5f2;--danger:#b3392f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--card:#222220;--ink:#f0efe9;--mute:#9c9a92;--line:#34332f;--accent:#5fb89f;--accent-ink:#10231d;--field:#171716;--danger:#e5776d}}
+:root[data-theme="dark"]{--bg:#171716;--card:#222220;--ink:#f0efe9;--mute:#9c9a92;--line:#34332f;--accent:#5fb89f;--accent-ink:#10231d;--field:#171716;--danger:#e5776d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;line-height:1.4}
+main{max-width:560px;margin:0 auto;padding:0 14px 40px}
+[hidden]{display:none!important}
+.total{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--accent);color:var(--accent-ink);margin:0 -14px;padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.total small{display:block;font-size:.8rem;opacity:.85}
+.total strong{font-size:2rem;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1.1}
+.total .sub{text-align:right;font-size:.85rem;opacity:.9}
+h1{font-size:1.35rem;margin:18px 0 10px}
+h2{font-size:1.05rem;margin:22px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+h2 span{font-weight:400;color:var(--mute);font-size:.9rem}
+.btn{height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:.95rem;cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.dng{color:var(--danger)}
+.btn.sm{height:38px;padding:0 12px;font-size:.88rem}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+.bar .btn{flex:1 1 auto}
+.rec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.rec .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.rec b{font-size:1.05rem}
+.rec .v{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rec .d{color:var(--mute);font-size:.84rem;margin:2px 0 10px}
+.empty{color:var(--mute);padding:20px 4px}
+.ttl{width:100%;height:46px;font-size:1.1rem;font-weight:600;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-top:14px}
+.meta{color:var(--mute);font-size:.84rem;margin:6px 2px 0}
+.row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.chip{width:46px;height:30px;border-radius:5px;display:grid;place-items:center;font-weight:700;font-size:.8rem;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.coin{width:34px;height:34px;border-radius:50%;margin:0 6px;font-size:.72rem}
+.lbl b{display:block;font-size:1rem}
+.lbl span{font-size:.82rem;color:var(--mute);font-variant-numeric:tabular-nums}
+.ctl{display:flex;align-items:center;gap:4px}
+.ctl button{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--field);color:var(--ink);font-size:1.2rem;cursor:pointer}
+.ctl input{width:64px;height:36px;text-align:center;font-size:1.05rem;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.paper{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:14px 0}
+.paper h1{margin:0 0 2px}
+.paper table{width:100%;border-collapse:collapse;font-size:.92rem;margin:10px 0;font-variant-numeric:tabular-nums}
+.paper th,.paper td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+.paper th:first-child,.paper td:first-child{text-align:left}
+.paper tfoot td{font-weight:700;border-bottom:0}
+.paper h3{margin:16px 0 0;font-size:1rem}
+.rt{border:1px solid var(--ink)}
+.rt th,.rt td{border:1px solid var(--line);padding:6px 8px}
+.rt .hd th{background:var(--field)}
+.rt .tt td{font-weight:700;background:var(--field)}
+.rt .tg td{font-weight:800;font-size:1.05em}
+.cover{text-align:center;padding:44px 0 6px}
+.logo{width:88px;height:88px;border-radius:22px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:2.1rem;font-weight:800;margin:0 auto 16px}
+.cover h1{font-size:1.7rem;margin:0}.cover p{color:var(--mute);margin:6px 0 0}
+.menu{display:grid;gap:10px;margin-top:26px}
+.menu .btn{height:56px;font-size:1.05rem;display:flex;justify-content:space-between;align-items:center;padding:0 18px}
+.menu .btn.pri{justify-content:center}
+#splash{position:fixed;inset:0;z-index:100;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;transition:opacity .5s}
+.pbar{width:min(240px,70%);height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:10px}
+.pbar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px}
+#ppct{font-size:.95rem;font-variant-numeric:tabular-nums;opacity:.9;margin-top:-6px}
+#splash h1{margin:0;font-size:1.8rem}
+#splash .logo{margin:0;animation:pop .8s ease-out}
+.logo.inv{background:var(--accent-ink);color:var(--accent)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){#splash .logo{animation:none}}
+.mb{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-align:left;cursor:pointer;font:inherit;box-shadow:0 1px 2px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.05);transition:transform .08s}
+.mb:active{transform:scale(.98)}
+.mb .ic{width:44px;height:44px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.mb .ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mb .tx{flex:1}.mb b{display:block;font-size:1.05rem}.mb small{color:var(--mute);font-size:.82rem}
+.mb .ch{font-size:1.6rem;color:var(--mute);line-height:1}
+.mb.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.mb.pri .ic{background:var(--accent-ink);color:var(--accent)}
+.mb.pri small,.mb.pri .ch{color:inherit;opacity:.85}
+@media print{#splash{display:none}.rt,.rt th,.rt td{border:1px solid #444}.rt .hd th,.rt .tt td{background:#eee}body{background:#fff;color:#000}.noprint{display:none!important}.paper{border:0;padding:0}.paper th,.paper td{border-color:#999}}
+.hb{display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:128px;padding:16px;border-radius:18px;font:inherit;text-align:left;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.14);transition:transform .15s}
+.hb:active{transform:scale(.97)}
+.hb svg{width:30px;height:30px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hb .mt{font-weight:700;font-size:1.05rem;line-height:1.2}.hb .ms{font-size:.8rem;opacity:.85;line-height:1.25}
+.hb.p{border:0;color:var(--accent-ink);background:linear-gradient(160deg,rgba(255,255,255,.18),rgba(0,0,0,.12)),var(--accent)}
+.hb.s{border:2px solid var(--accent);color:var(--ink);background:var(--card)}.hb.s svg{color:var(--accent)}
+.hb.mw{flex-direction:row;align-items:center;min-height:0;gap:14px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 12px}
+.mcol{display:flex;flex-direction:column;gap:12px}
+.gh{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+h2{border-left:4px solid var(--accent);padding-left:8px}
+.btn[data-home]{height:auto;padding:10px 16px;border-radius:12px;font-weight:600;font-size:1rem}
+.spin{transform-origin:60px 60px;animation:spin 6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.scoin{opacity:0;animation:drop .6s cubic-bezier(.5,0,.9,.6) forwards}
+.c1{animation-delay:.1s}.c2{animation-delay:.55s}
+@keyframes drop{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:1;transform:translateY(66px)}}
+.bx{transform-box:view-box;transform-origin:80px 126px;animation:bump .18s ease-out .6s,bump .18s ease-out 1.05s}
+@keyframes bump{50%{transform:scaleY(.95)}}
+@media (prefers-reduced-motion:reduce){.scoin{animation:none;opacity:1}.bx{animation:none}}
+.flag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--accent);color:var(--accent-ink);white-space:nowrap;vertical-align:middle}
+.mb:disabled{opacity:.7;cursor:not-allowed;box-shadow:none}
+</style>
+</head>
+<body>
+<div id="splash" role="img" aria-label="Contagem em Eventos">
+  <svg viewBox="0 0 160 140" style="width:140px;overflow:visible" aria-hidden="true"><g class="bx">
+  <rect x="36" y="62" width="88" height="14" rx="7" fill="var(--accent)"/><rect x="57" y="64" width="46" height="6" rx="3" fill="#10231d"/>
+  <g class="scoin c1"><circle cx="71" cy="18" r="11" fill="#c9a43c" stroke="#8f6f1c" stroke-width="2"/><circle cx="71" cy="18" r="6.5" fill="none" stroke="#8f6f1c" stroke-width="1" opacity=".7"/></g><g class="scoin c2"><circle cx="91" cy="18" r="11" fill="#c9a43c" stroke="#8f6f1c" stroke-width="2"/><circle cx="91" cy="18" r="6.5" fill="none" stroke="#8f6f1c" stroke-width="1" opacity=".7"/></g>
+  <rect x="40" y="70" width="80" height="56" rx="9" fill="var(--accent)"/><text x="80" y="106" text-anchor="middle" font-size="16" font-weight="800" fill="var(--accent-ink)" font-family="system-ui,sans-serif">R$</text></g></svg>
+  <h1>Contagem em Eventos</h1><div style="color:var(--mute)">Conferência de cédulas e moedas</div>
+  <div class="pbar"><i id="pfill"></i></div><div id="ppct">0%</div></div>
+<main>
+
+<section id="vHome">
+  <h1>Contagem em Eventos</h1>
+  <div class="mgrid">
+    <div class="mcol"><div class="gh">Registrar</div>
+      <button class="hb p" id="bNew"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="mt">Nova contagem</span><span class="ms">Iniciar um novo registro</span></button></div>
+    <div class="mcol"><div class="gh">Consultar</div>
+      <button class="hb s" id="bList"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span class="mt">Contagens registradas</span><span class="ms" id="nRecs">0 registros</span></button></div>
+  </div>
+  <div class="mcol">
+    <button class="hb s mw" id="bAll"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg><span><span class="mt" style="display:block">Relatório geral</span><span class="ms">Soma de todas as contagens</span></span></button>
+    <button class="hb s mw" id="bBackup"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3"/></svg><span><span class="mt" style="display:block">Backup e restauração</span><span class="ms">Salvar e recuperar seus dados</span></span></button>
+  </div>
+</section>
+
+<section id="vNew" hidden>
+  <div style="margin-top:12px"><button class="btn sm" data-home>← Menu principal</button></div>
+  <h1>Nova contagem</h1>
+  <p class="meta" style="margin:0 0 12px">Escolha o momento do evento:</p>
+  <div class="menu" style="margin-top:0">
+    <button class="mb" data-t="Donativos - Primeira Sessão"><span class="tx"><b>Donativos - Primeira Sessão</b><small class="dd"></small></span><span class="ch" data-ch>›</span></button>
+    <button class="mb" data-t="Donativos - Intervalo"><span class="tx"><b>Donativos - Intervalo</b><small class="dd"></small></span><span class="ch" data-ch>›</span></button>
+    <button class="mb" data-t="Donativos - Segunda Sessão"><span class="tx"><b>Donativos - Segunda Sessão</b><small class="dd"></small></span><span class="ch" data-ch>›</span></button>
+  </div>
+  <div class="meta" id="allDone" hidden style="margin-top:12px">Todas as contagens de hoje já foram encerradas.</div>
+</section>
+
+<section id="vBackup" hidden>
+  <div style="margin-top:12px"><button class="btn sm" data-home>← Menu principal</button></div>
+  <h1>Backup e restauração</h1>
+  <div class="paper" style="margin-top:26px">
+    <h3 style="margin-top:0">Backup e restauração</h3>
+    <p class="meta">Gere um arquivo de backup e envie ao Google Drive pela tela de compartilhar. Para restaurar, escolha o arquivo salvo no Drive ou no aparelho.</p>
+    <div class="bar" style="margin-top:10px"><button class="btn pri" id="bBk">Fazer backup</button><button class="btn" id="bRs">Restaurar backup</button></div>
+    <input type="file" id="fRs" accept=".json,application/json" hidden>
+    <div class="meta" id="bkMsg" role="status"></div>
+    <details id="bkTxt" style="margin-top:10px"><summary class="meta">Backup em texto (alternativa ao arquivo)</summary>
+      <textarea id="tx" rows="4" style="width:100%;margin-top:8px;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px" aria-label="Texto do backup"></textarea>
+      <div class="bar" style="margin-top:8px"><button class="btn sm" id="bCp">Copiar texto</button><button class="btn sm" id="bPs">Restaurar do texto</button></div>
+    </details>
+  </div>
+</section>
+
+<section id="vList" hidden>
+  <div style="margin-top:12px"><button class="btn sm" id="bHome" data-home>← Menu principal</button></div>
+  <h1>Contagens registradas</h1>
+  <div id="recs"></div>
+</section>
+
+<section id="vCount" hidden>
+  <div class="total" role="status" aria-live="polite">
+    <div><small>Total desta contagem</small><strong id="total">R$ 0,00</strong></div>
+    <div class="sub"><span id="pieces">0</span> itens<br>Cédulas <span id="sumN"></span><br>Moedas <span id="sumC"></span></div>
+  </div>
+  <div class="bar" style="margin-top:12px"><button class="btn sm" data-home>← Menu principal</button><button class="btn sm" id="bBack">Contagens registradas</button></div>
+  <input class="ttl" id="title" placeholder="Título (ex.: Recebimento da manhã)" aria-label="Título da contagem">
+  <div class="meta" id="meta"></div>
+  <h2>Cédulas <span id="hN"></span></h2><div id="notes"></div>
+  <h2>Moedas <span id="hC"></span></h2><div id="coins"></div>
+  <div class="bar" style="margin-top:20px">
+    <button class="btn pri" id="bRep">Salvar e gerar relatório</button>
+  </div>
+</section>
+
+<section id="vRep" hidden>
+  <div class="bar noprint" style="margin-top:14px">
+    <button class="btn" id="rBack" data-home>← Menu principal</button>
+    <button class="btn pri" id="rPrint">Imprimir / salvar PDF</button>
+    <button class="btn" id="rShare">Compartilhar</button>
+    <button class="btn" id="rCopy">Copiar texto</button>
+  </div>
+  <div class="meta noprint" id="rMsg" role="status"></div>
+  <div class="paper" id="paper"></div>
+</section>
+
+</main>
+<script>
+const NOTES=[[20000,'#7d8590'],[10000,'#2f6fb5'],[5000,'#b8742a'],[2000,'#d2a21e'],[1000,'#c4443c'],[500,'#7a4fa0'],[200,'#5b7a8c']];
+const COINS=[[100,'#b08a2e'],[50,'#a9783d'],[25,'#a9783d'],[10,'#a9783d'],[5,'#8a7468']];
+const $=id=>document.getElementById(id);
+const fmt=c=>(c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const dt=t=>new Date(t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let recs=[];try{recs=JSON.parse(localStorage.getItem('recs')||'[]')}catch(e){}
+let cur=null,backTo='vList',repText='';
+const save=()=>{try{localStorage.setItem('recs',JSON.stringify(recs));return true}catch(e){return false}};
+const calc=q=>{let sn=0,sc=0,cn=0,cc=0;
+  NOTES.forEach(([v])=>{const n=q[v]||0;sn+=n*v;cn+=n});COINS.forEach(([v])=>{const n=q[v]||0;sc+=n*v;cc+=n});
+  return{sn,sc,cn,cc,total:sn+sc}};
+function show(id){['vHome','vNew','vList','vCount','vRep','vBackup'].forEach(v=>$(v).hidden=v!==id);window.scrollTo(0,0)}
+function twoStep(btn,fn){ // confirmação em dois toques
+  if(btn.dataset.arm){fn();return}
+  const old=btn.textContent;btn.dataset.arm=1;btn.textContent='Toque de novo para confirmar';
+  setTimeout(()=>{delete btn.dataset.arm;btn.textContent=old},3000)}
+
+/* ---------- Lista ---------- */
+function renderList(){
+  $('bAll').hidden=!recs.length;$('nRecs').textContent=recs.length+(recs.length===1?' registro':' registros');
+  $('recs').innerHTML=recs.length?recs.map(r=>`<div class="rec"><div class="top"><span><b>${esc(r.title||'Sem título')}</b>${r.closed?' <span class="flag">Encerrada</span>':''}</span><span class="v">${fmt(calc(r.qty).total)}</span></div>
+  <div class="d">Contada em ${dt(r.createdAt)}${r.updatedAt?' · editada em '+dt(r.updatedAt):''}</div>
+  <div class="bar"><button class="btn sm" data-a="edit" data-id="${r.id}">Editar</button><button class="btn sm" data-a="rep" data-id="${r.id}">Relatório</button><button class="btn sm dng" data-a="del" data-id="${r.id}">Excluir</button></div></div>`).join('')
+  :'<div class="empty">Nenhuma contagem ainda. Toque em “Nova contagem” para começar.</div>';
+}
+$('recs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]');if(!b)return;
+  const r=recs.find(x=>x.id==b.dataset.id);
+  if(b.dataset.a==='edit')openCount(r);
+  else if(b.dataset.a==='rep'){backTo='vList';report([r])}
+  else twoStep(b,()=>{recs=recs.filter(x=>x!==r);save();renderList()});
+});
+const ddmm=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)};
+const TITLES=['Donativos - Primeira Sessão','Donativos - Intervalo','Donativos - Segunda Sessão'];
+const kindOf=r=>r.kind||TITLES.find(t=>(r.title||'').startsWith(t));
+const today=r=>new Date(r.createdAt).toDateString()===new Date().toDateString();
+const hm=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+function renderChoose(){let all=true;
+  document.querySelectorAll('#vNew button[data-t]').forEach(b=>{
+    const c=recs.find(r=>r.closed&&today(r)&&kindOf(r)===b.dataset.t),ch=b.querySelector('[data-ch]');
+    b.disabled=!!c;b.querySelector('.dd').textContent=c?'Encerrada hoje às '+hm(c.closedAt||c.createdAt):'Data: '+ddmm();
+    ch.textContent=c?'Encerrada':'›';ch.className=c?'flag':'ch';if(!c)all=false});
+  $('allDone').hidden=!all}
+$('bNew').onclick=()=>{renderChoose();show('vNew')};
+$('vNew').addEventListener('click',e=>{const b=e.target.closest('button[data-t]');if(!b||b.disabled)return;
+  const t=b.dataset.t,open=recs.find(r=>!r.closed&&today(r)&&kindOf(r)===t);
+  if(open)return openCount(open);
+  const r={id:Date.now(),kind:t,title:t+' — '+ddmm(),createdAt:Date.now(),qty:{}};openCount(r)});
+$('bBackup').onclick=()=>show('vBackup');
+document.querySelectorAll('[data-home]').forEach(b=>b.addEventListener('click',()=>{renderList();show('vHome')}));
+$('bList').onclick=()=>{renderList();show('vList')};
+$('bHome').onclick=()=>{renderList();show('vHome')};
+$('bAll').onclick=()=>{backTo='vList';report(recs)};
+
+/* ---------- Contagem ---------- */
+function build(list,el,coin){list.forEach(([v,color])=>{
+  const r=document.createElement('div');r.className='row';
+  r.innerHTML=`<div class="chip ${coin?'coin':''}" style="background:${color}">${coin?(v>=100?'1':v):v/100}</div>
+  <div class="lbl"><b>${fmt(v)}</b><span id="s${v}"></span></div>
+  <div class="ctl"><button aria-label="Diminuir ${fmt(v)}" data-d="-1" data-v="${v}">−</button>
+  <input inputmode="numeric" id="q${v}" placeholder="0" aria-label="Quantidade de ${fmt(v)}">
+  <button aria-label="Aumentar ${fmt(v)}" data-d="1" data-v="${v}">+</button></div>`;
+  $(el).appendChild(r);
+  $('q'+v).addEventListener('input',e=>{setQ(v,parseInt(e.target.value.replace(/\D/g,''),10)||0);e.target.value=cur.qty[v]||''});
+})}
+function setQ(v,n){if(!recs.includes(cur))recs.unshift(cur);if(n)cur.qty[v]=n;else delete cur.qty[v];cur.updatedAt=Date.now();save();update()}
+function update(){
+  const q=cur.qty;[...NOTES,...COINS].forEach(([v])=>{const n=q[v]||0;$('s'+v).textContent=n+' × '+fmt(v)+' = '+fmt(n*v)});
+  const c=calc(q);$('total').textContent=fmt(c.total);$('sumN').textContent=fmt(c.sn);$('sumC').textContent=fmt(c.sc);
+  $('pieces').textContent=c.cn+c.cc;$('hN').textContent=c.cn+' cédulas';$('hC').textContent=c.cc+' moedas';
+  $('meta').textContent='Contada em '+dt(cur.createdAt)+(cur.updatedAt?' · editada em '+dt(cur.updatedAt):'')+(cur.closed?' · Encerrada':'');
+}
+function openCount(r){cur=r;$('title').value=r.title||'';
+  [...NOTES,...COINS].forEach(([v])=>$('q'+v).value=r.qty[v]||'');update();show('vCount')}
+$('title').addEventListener('input',e=>{cur.title=e.target.value;save()});
+$('vCount').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;
+  const v=b.dataset.v;setQ(v,Math.max(0,(cur.qty[v]||0)+Number(b.dataset.d)));$('q'+v).value=cur.qty[v]||''});
+$('bBack').onclick=()=>{renderList();show('vList')};
+$('bRep').onclick=()=>{cur.title=$('title').value.trim()||cur.title||'Sem título';cur.updatedAt=cur.updatedAt||Date.now();if(!recs.includes(cur))recs.unshift(cur);cur.closed=true;cur.closedAt=cur.closedAt||Date.now();save();report([cur])};
+build(NOTES,'notes',false);build(COINS,'coins',true);
+
+/* ---------- Relatório ---------- */
+
+function report(list){
+  const one=list.length===1,m={};list.forEach(r=>Object.entries(r.qty).forEach(([v,n])=>m[v]=(m[v]||0)+n));
+  const c=calc(m),rows=[...NOTES,...COINS].filter(([v])=>m[v]);
+  const title=one?(list[0].title||'Sem título'):'Relatório geral';
+  const sub=one?'Contada em '+dt(list[0].createdAt)+(list[0].updatedAt?' · editada em '+dt(list[0].updatedAt):''):list.length+' contagens';
+  let h=`<h1>${esc(title)}</h1><div class="meta">${sub}<br>Emitido em ${dt(Date.now())}</div>`;
+  let t=`${title}\n${sub}\nEmitido em ${dt(Date.now())}\n\n`;
+  if(!one){h+=`<h3>Contagens</h3><table class="rt"><tbody>`+list.map(r=>`<tr><td>${esc(r.title||'Sem título')}<br><small>${dt(r.createdAt)}</small></td><td>${fmt(calc(r.qty).total)}</td></tr>`).join('')+`</tbody></table>`;
+    t+=list.map(r=>`${r.title||'Sem título'} (${dt(r.createdAt)}): ${fmt(calc(r.qty).total)}`).join('\n')+'\n\n'}
+  const sec=(name,l2,qn,vn)=>{const rs=l2.filter(([v])=>m[v]);
+    return `<tr class="hd"><th>${name}:</th><th>Quantidade</th><th>Valor</th></tr>`+
+    (rs.length?rs.map(([v])=>`<tr><td>${fmt(v)}</td><td>${m[v]}</td><td>${fmt(m[v]*v)}</td></tr>`).join(''):'<tr><td colspan="3">Nada contado.</td></tr>')+
+    `<tr class="tt"><td>Total em ${name}</td><td>${qn}</td><td>${fmt(vn)}</td></tr>`};
+  h+=`<h3>${one?'Detalhamento':'Detalhamento consolidado'}</h3><table class="rt">`+sec('Notas',NOTES,c.cn,c.sn)+sec('Moedas',COINS,c.cc,c.sc)+`<tr class="tg"><td>Total Geral</td><td>${c.cn+c.cc}</td><td>${fmt(c.total)}</td></tr></table>`;
+  const tx=(name,l2,qn,vn)=>`${name}:\tQuantidade\tValor\n`+l2.filter(([v])=>m[v]).map(([v])=>`${fmt(v)}\t${m[v]}\t${fmt(m[v]*v)}`).join('\n')+`\nTotal em ${name}\t${qn}\t${fmt(vn)}\n\n`;
+  t+=tx('Notas',NOTES,c.cn,c.sn)+tx('Moedas',COINS,c.cc,c.sc)+`Total Geral\t${c.cn+c.cc}\t${fmt(c.total)}`;
+  $('rMsg').textContent='';
+  $('paper').innerHTML=h;repText=t;show('vRep');
+}
+$('rBack').onclick=()=>{renderList();show('vHome')};
+$('rPrint').onclick=()=>{
+  $('rMsg').textContent='Se a janela de impressão não abriu, o navegador bloqueou a impressão nesta página. Use “Compartilhar” ou “Copiar texto”, ou abra o app hospedado/instalado, onde “Salvar como PDF” funciona.';
+  try{window.print()}catch(e){}};
+$('rShare').onclick=async()=>{try{await navigator.share({title:$('paper').querySelector('h1').textContent,text:repText})}
+  catch(e){if(e.name!=='AbortError')$('rMsg').textContent='Compartilhar não está disponível aqui. Use “Copiar texto”.'}};
+$('rCopy').onclick=async e=>{try{await navigator.clipboard.writeText(repText);e.target.textContent='Copiado!'}catch(_){e.target.textContent='Não foi possível copiar'}
+  setTimeout(()=>e.target.textContent='Copiar texto',2000)};
+
+/* ---------- Backup / restauração ---------- */
+const msg=t=>$('bkMsg').textContent=t;
+const stamp=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())};
+const pack=()=>JSON.stringify({app:'contador-de-dinheiro',version:1,exportedAt:Date.now(),recs},null,1);
+$('bBk').onclick=async()=>{
+  const name='contador-backup-'+stamp()+'.json',json=pack(),file=new File([json],name,{type:'application/json'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});msg('Na tela de compartilhar, escolha o Google Drive.');return}}
+  catch(e){if(e.name==='AbortError')return}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove()}catch(e){}
+  $('tx').value=json;$('bkTxt').open=true;
+  msg('Se o arquivo '+name+' não for baixado, copie o texto abaixo e guarde-o no Drive (ex.: numa nota).');
+};
+function restore(text){
+  let d;try{d=JSON.parse(text)}catch(e){msg('Arquivo inválido: não é um backup deste app.');return}
+  if(!d||!Array.isArray(d.recs)){msg('Arquivo inválido: não é um backup deste app.');return}
+  let add=0,upd=0;
+  d.recs.filter(r=>r&&r.id&&r.qty&&typeof r.qty==='object').forEach(r=>{
+    const x=recs.find(y=>y.id==r.id);
+    if(!x){recs.push(r);add++}
+    else if((r.updatedAt||r.createdAt)>(x.updatedAt||x.createdAt)){Object.assign(x,r);upd++}
+  });
+  recs.sort((a,b)=>b.createdAt-a.createdAt);save();renderList();
+  msg('Backup restaurado: '+add+' contagens novas e '+upd+' atualizadas. Nada foi apagado.');
+}
+$('bRs').onclick=()=>$('fRs').click();
+$('fRs').onchange=async e=>{const f=e.target.files[0];if(f)restore(await f.text());e.target.value=''};
+$('bPs').onclick=()=>restore($('tx').value);
+$('bCp').onclick=async e=>{if(!$('tx').value)$('tx').value=pack();
+  try{await navigator.clipboard.writeText($('tx').value);e.target.textContent='Copiado!'}catch(_){$('tx').select();e.target.textContent='Selecionado: copie'}
+  setTimeout(()=>e.target.textContent='Copiar texto',2000)};
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+{const n=recs.length;recs=recs.filter(r=>r.closed||Object.keys(r.qty||{}).length);if(recs.length!==n)save()}
+renderList();show('vHome');
+(()=>{const sp=$('splash'),f=$('pfill'),t=$('ppct'),T=1500,t0=performance.now();let done=false;
+  const end=()=>{if(done)return;done=true;sp.style.opacity=0;setTimeout(()=>sp.remove(),500)};
+  const tick=now=>{if(done)return;const k=Math.min(1,(now-t0)/T);f.style.width=k*100+'%';t.textContent=Math.round(k*100)+'%';
+    k<1?requestAnimationFrame(tick):setTimeout(end,250)};
+  requestAnimationFrame(tick);sp.addEventListener('click',end)})();
+</script>
+</body>
+</html>
