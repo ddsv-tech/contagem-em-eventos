@@ -1,4 +1,5 @@
 {
+ "id": "contagem-em-eventos",
  "name": "Contagem em Eventos",
  "short_name": "Eventos",
  "description": "Conte cédulas e moedas e registre cada recebimento.",
