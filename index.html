@@ -18,7 +18,8 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;line-height:1.4}
-main{max-width:560px;margin:0 auto;padding:0 14px 40px}
+main{width:100%;flex:1;max-width:560px;margin:0 auto;padding:0 14px 24px}
+body{display:flex;flex-direction:column;min-height:100vh}
 [hidden]{display:none!important}
 .total{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--accent);color:var(--accent-ink);margin:0 -14px;padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
 .total small{display:block;font-size:.8rem;opacity:.85}
@@ -109,6 +110,39 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
 @media (prefers-reduced-motion:reduce){.scoin{animation:none;opacity:1}.bx{animation:none}}
 .flag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--accent);color:var(--accent-ink);white-space:nowrap;vertical-align:middle}
 .mb:disabled{opacity:.7;cursor:not-allowed;box-shadow:none}
+footer#ft{text-align:center;font-size:.8rem;color:var(--mute);padding:14px;border-top:1px solid var(--line);font-weight:400}
+#ft.blink{animation:fblink .6s ease-in-out 3}
+#ft.bold{font-weight:700;color:var(--ink)}
+@keyframes fblink{0%,100%{opacity:1}50%{opacity:.08}}
+@media print{footer#ft{display:none}}
+
+/* ===== visual alinhado ao Relatório de Campo ===== */
+body{font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;padding:16px}
+h1{font-size:1.3rem;margin:4px 0 12px}
+.total{background:var(--card);color:var(--ink);margin:0 0 16px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.total small{color:var(--mute);font-weight:700;font-size:.95rem;opacity:1}
+.total strong{color:var(--accent);font-size:2rem;font-weight:700}
+.total .sub{color:var(--mute);opacity:1;white-space:nowrap;font-size:.8rem}
+.btn{border:0;background:var(--line);color:var(--ink);font-weight:600;border-radius:10px}
+.btn.pri{background:var(--accent);color:var(--accent-ink)}
+.btn.dng{color:var(--danger)}
+.btn[data-home]{background:var(--card);border:1px solid var(--line)}
+.ttl{background:var(--bg);border-radius:10px}
+.row,.rec,.paper{border-radius:14px}
+.paper,.rec{padding:16px}
+#sb .sbt{font-size:1.3rem;font-weight:700;color:var(--accent);margin:0 0 12px}
+#sb details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;padding:0 14px}
+#sb summary{cursor:pointer;padding:13px 0;font-weight:700;color:var(--accent);font-size:1.02rem;list-style:none;display:flex;justify-content:space-between}
+#sb summary::-webkit-details-marker{display:none}
+#sb summary::after{content:"+";font-size:1.3rem;line-height:1}
+#sb details[open] summary::after{content:"–"}
+#sb details p{margin:0 0 12px;font-size:.92rem}
+#sb details ul{margin:0 0 12px;padding-left:18px;font-size:.92rem}
+.back{padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font:inherit;font-weight:600;margin-bottom:14px;cursor:pointer}
+.sbt{font-size:1.3rem;font-weight:700;color:var(--accent);margin:0 0 12px}
+.back{display:inline-flex;align-items:center;gap:6px;padding:12px 22px 12px 14px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:1.05rem;font-weight:700;margin-bottom:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.back svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 </style>
 </head>
 <body>
@@ -120,9 +154,10 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
   <h1>Contagem em Eventos</h1><div style="color:var(--mute)">Conferência de cédulas e moedas</div>
   <div class="pbar"><i id="pfill"></i></div><div id="ppct">0%</div></div>
 <main>
+<h1 class="noprint">Contagem em Eventos</h1>
+<button class="back noprint" id="back" hidden><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Voltar</button>
 
 <section id="vHome">
-  <h1>Contagem em Eventos</h1>
   <div class="mgrid">
     <div class="mcol"><div class="gh">Registrar</div>
       <button class="hb p" id="bNew"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="mt">Nova contagem</span><span class="ms">Iniciar um novo registro</span></button></div>
@@ -132,12 +167,12 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
   <div class="mcol">
     <button class="hb s mw" id="bAll"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg><span><span class="mt" style="display:block">Relatório geral</span><span class="ms">Soma de todas as contagens</span></span></button>
     <button class="hb s mw" id="bBackup"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3"/></svg><span><span class="mt" style="display:block">Backup e restauração</span><span class="ms">Salvar e recuperar seus dados</span></span></button>
+    <button class="hb s mw" id="bAbout"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 16v-5M12 8h.01"/></svg><span><span class="mt" style="display:block">Sobre</span><span class="ms">Como usar o app</span></span></button>
   </div>
 </section>
 
 <section id="vNew" hidden>
-  <div style="margin-top:12px"><button class="btn sm" data-home>← Menu principal</button></div>
-  <h1>Nova contagem</h1>
+  <div class="sbt">Nova contagem</div>
   <p class="meta" style="margin:0 0 12px">Escolha o momento do evento:</p>
   <div class="menu" style="margin-top:0">
     <button class="mb" data-t="Donativos - Primeira Sessão"><span class="tx"><b>Donativos - Primeira Sessão</b><small class="dd"></small></span><span class="ch" data-ch>›</span></button>
@@ -148,8 +183,7 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
 </section>
 
 <section id="vBackup" hidden>
-  <div style="margin-top:12px"><button class="btn sm" data-home>← Menu principal</button></div>
-  <h1>Backup e restauração</h1>
+  <div class="sbt">Backup e restauração</div>
   <div class="paper" style="margin-top:26px">
     <h3 style="margin-top:0">Backup e restauração</h3>
     <p class="meta">Gere um arquivo de backup e envie ao Google Drive pela tela de compartilhar. Para restaurar, escolha o arquivo salvo no Drive ou no aparelho.</p>
@@ -164,17 +198,16 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
 </section>
 
 <section id="vList" hidden>
-  <div style="margin-top:12px"><button class="btn sm" id="bHome" data-home>← Menu principal</button></div>
-  <h1>Contagens registradas</h1>
+  <div class="sbt">Contagens registradas</div>
   <div id="recs"></div>
 </section>
 
 <section id="vCount" hidden>
+    <div style="margin:0 0 12px"><button class="btn sm" id="bBack">Contagens registradas</button></div>
   <div class="total" role="status" aria-live="polite">
     <div><small>Total desta contagem</small><strong id="total">R$ 0,00</strong></div>
     <div class="sub"><span id="pieces">0</span> itens<br>Cédulas <span id="sumN"></span><br>Moedas <span id="sumC"></span></div>
   </div>
-  <div class="bar" style="margin-top:12px"><button class="btn sm" data-home>← Menu principal</button><button class="btn sm" id="bBack">Contagens registradas</button></div>
   <input class="ttl" id="title" placeholder="Título (ex.: Recebimento da manhã)" aria-label="Título da contagem">
   <div class="meta" id="meta"></div>
   <h2>Cédulas <span id="hN"></span></h2><div id="notes"></div>
@@ -186,7 +219,6 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
 
 <section id="vRep" hidden>
   <div class="bar noprint" style="margin-top:14px">
-    <button class="btn" id="rBack" data-home>← Menu principal</button>
     <button class="btn pri" id="rPrint">Imprimir / salvar PDF</button>
     <button class="btn" id="rShare">Compartilhar</button>
     <button class="btn" id="rCopy">Copiar texto</button>
@@ -195,7 +227,25 @@ h2{border-left:4px solid var(--accent);padding-left:8px}
   <div class="paper" id="paper"></div>
 </section>
 
+<section id="vAbout" hidden>
+  <div id="sb">
+    <div class="sbt">Sobre</div>
+    <details open><summary>O que é o app</summary><p>O Contagem em Eventos ajuda você a contar cédulas e moedas em reais (R$) recebidas em eventos, registrar cada contagem por sessão, com data e hora, e gerar relatórios.</p></details>
+    <details><summary>Como usar</summary><ul>
+      <li><b>Nova contagem:</b> escolha a sessão (Primeira Sessão, Intervalo ou Segunda Sessão).</li>
+      <li><b>Cédulas e moedas:</b> informe a quantidade de cada uma; o total aparece na hora.</li>
+      <li><b>Salvar e gerar relatório:</b> encerra a contagem e abre o relatório.</li>
+      <li><b>Contagens registradas:</b> consulte, edite ou exclua.</li>
+      <li><b>Relatório geral:</b> soma de todas as contagens.</li>
+      <li><b>Backup:</b> salve seus dados e restaure em outro aparelho.</li></ul></details>
+    <details><summary>Seus dados e privacidade</summary><p>Seus registros ficam só no seu aparelho, e ninguém os vê. O app só conta quantos aparelhos já o usaram, sem coletar nome, localização ou qualquer dado pessoal.</p><p><b>Atenção:</b> se você limpar o navegador ou trocar de celular, os dados se perdem. Faça backup com frequência.</p></details>
+    <details><summary>Instalar no celular</summary><p><b>Android (Chrome):</b> toque em ⋮ e em <i>Instalar app</i>.</p><p><b>iPhone (Safari):</b> toque em Compartilhar e em <i>Adicionar à Tela de Início</i>.</p></details>
+    <div id="cnw" hidden><div style="display:flex;align-items:center;justify-content:space-between;border:2px solid var(--accent);background:var(--card);border-radius:14px;padding:16px;margin:10px 0 0"><span>Usuários do app</span><b id="cn" style="font-size:1.4rem;color:var(--accent)">—</b></div></div>
+    <div style="text-align:center;font-size:.8rem;margin-top:14px;color:var(--mute)">Versão 1.1 · atualizado em outubro de 2026</div>
+  </div>
+</section>
 </main>
+<footer id="ft" style="user-select:none;-webkit-user-select:none;touch-action:manipulation">Copyright (c) 2026 ddsv-tech. Todos os direitos reservados.</footer>
 <script>
 const NOTES=[[20000,'#7d8590'],[10000,'#2f6fb5'],[5000,'#b8742a'],[2000,'#d2a21e'],[1000,'#c4443c'],[500,'#7a4fa0'],[200,'#5b7a8c']];
 const COINS=[[100,'#b08a2e'],[50,'#a9783d'],[25,'#a9783d'],[10,'#a9783d'],[5,'#8a7468']];
@@ -209,7 +259,7 @@ const save=()=>{try{localStorage.setItem('recs',JSON.stringify(recs));return tru
 const calc=q=>{let sn=0,sc=0,cn=0,cc=0;
   NOTES.forEach(([v])=>{const n=q[v]||0;sn+=n*v;cn+=n});COINS.forEach(([v])=>{const n=q[v]||0;sc+=n*v;cc+=n});
   return{sn,sc,cn,cc,total:sn+sc}};
-function show(id){['vHome','vNew','vList','vCount','vRep','vBackup'].forEach(v=>$(v).hidden=v!==id);window.scrollTo(0,0)}
+function show(id){['vHome','vNew','vList','vCount','vRep','vBackup','vAbout'].forEach(v=>$(v).hidden=v!==id);window.scrollTo(0,0);$('back').hidden=id==='vHome'}
 function twoStep(btn,fn){ // confirmação em dois toques
   if(btn.dataset.arm){fn();return}
   const old=btn.textContent;btn.dataset.arm=1;btn.textContent='Toque de novo para confirmar';
@@ -247,9 +297,9 @@ $('vNew').addEventListener('click',e=>{const b=e.target.closest('button[data-t]'
   if(open)return openCount(open);
   const r={id:Date.now(),kind:t,title:t+' — '+ddmm(),createdAt:Date.now(),qty:{}};openCount(r)});
 $('bBackup').onclick=()=>show('vBackup');
-document.querySelectorAll('[data-home]').forEach(b=>b.addEventListener('click',()=>{renderList();show('vHome')}));
+$('bAbout').onclick=()=>show('vAbout');
+$('back').onclick=()=>{renderList();show('vHome')};
 $('bList').onclick=()=>{renderList();show('vList')};
-$('bHome').onclick=()=>{renderList();show('vHome')};
 $('bAll').onclick=()=>{backTo='vList';report(recs)};
 
 /* ---------- Contagem ---------- */
@@ -300,7 +350,6 @@ function report(list){
   $('rMsg').textContent='';
   $('paper').innerHTML=h;repText=t;show('vRep');
 }
-$('rBack').onclick=()=>{renderList();show('vHome')};
 $('rPrint').onclick=()=>{
   $('rMsg').textContent='Se a janela de impressão não abriu, o navegador bloqueou a impressão nesta página. Use “Compartilhar” ou “Copiar texto”, ou abra o app hospedado/instalado, onde “Salvar como PDF” funciona.';
   try{window.print()}catch(e){}};
@@ -343,8 +392,23 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.s
 
 {const n=recs.length;recs=recs.filter(r=>r.closed||Object.keys(r.qty||{}).length);if(recs.length!==n)save()}
 renderList();show('vHome');
-(()=>{const sp=$('splash'),f=$('pfill'),t=$('ppct'),T=1500,t0=performance.now();let done=false;
-  const end=()=>{if(done)return;done=true;sp.style.opacity=0;setTimeout(()=>sp.remove(),500)};
+(function(){
+  const API='https://countapi.mileshilliard.com/api/v1/',KEY='ddsv_tech_contagem_em_eventos_usuarios';
+  const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}return null};
+  const call=op=>fetch(API+op+'/'+KEY,{cache:'no-store'}).then(r=>{if(r.status===404&&op==='get')return{value:0};if(!r.ok)throw 0;return r.json()}).then(d=>{const n=Number(d&&d.value);if(!isFinite(n))throw 0;return n});
+  let tmr=null;
+  const hideC=()=>{clearTimeout(tmr);tmr=null;$('cnw').hidden=true};
+  const showC=()=>{$('cn').textContent='—';$('cnw').hidden=false;clearTimeout(tmr);tmr=setTimeout(hideC,3000);call('get').then(n=>{$('cn').textContent=n.toLocaleString('pt-BR')}).catch(()=>{})};
+  try{if(ls('contagem-contou')!=='1')call('hit').then(()=>ls('contagem-contou','1')).catch(()=>{})}catch(e){}
+  try{new MutationObserver(()=>{if($('vAbout').hidden)hideC()}).observe($('vAbout'),{attributes:true,attributeFilter:['hidden']})}catch(e){}
+  let taps=0,last=0;
+  $('ft').addEventListener('click',()=>{const n=Date.now();taps=(n-last>2000)?1:taps+1;last=n;if(taps>=3){taps=0;showC()}});
+})();
+(()=>{const ft=$('ft'),startFt=()=>{
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches){ft.classList.add('bold');return}
+    ft.classList.add('blink');ft.addEventListener('animationend',()=>{ft.classList.remove('blink');ft.classList.add('bold')},{once:true})};
+  const sp=$('splash'),f=$('pfill'),t=$('ppct'),T=1500,t0=performance.now();let done=false;
+  const end=()=>{if(done)return;done=true;startFt();sp.style.opacity=0;setTimeout(()=>sp.remove(),500)};
   const tick=now=>{if(done)return;const k=Math.min(1,(now-t0)/T);f.style.width=k*100+'%';t.textContent=Math.round(k*100)+'%';
     k<1?requestAnimationFrame(tick):setTimeout(end,250)};
   requestAnimationFrame(tick);sp.addEventListener('click',end)})();
