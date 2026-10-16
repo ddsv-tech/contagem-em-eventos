@@ -143,6 +143,18 @@ h1{font-size:1.3rem;margin:4px 0 12px}
 .sbt{font-size:1.3rem;font-weight:700;color:var(--accent);margin:0 0 12px}
 .back{display:inline-flex;align-items:center;gap:6px;padding:12px 22px 12px 14px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:1.05rem;font-weight:700;margin-bottom:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .back svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.rv{display:flex;align-items:center;gap:8px}
+.rn{width:38px;height:22px;border-radius:4px;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;flex:none;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.rc{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex:none;margin:0 7px;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+@media print{.rn,.rc{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.paper{overflow-x:auto}
+.paper table.rt{font-size:.85rem}
+.rt th,.rt td{padding:6px 5px}
+.rv{gap:6px}
+.rn{width:34px;font-size:10px}
+.rc{margin:0 5px}
+.cr3{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.cr3:last-child{border-bottom:0}.cr3 b{font-size:1.3rem;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -238,9 +250,12 @@ h1{font-size:1.3rem;margin:4px 0 12px}
       <li><b>Contagens registradas:</b> consulte, edite ou exclua.</li>
       <li><b>Relatório geral:</b> soma de todas as contagens.</li>
       <li><b>Backup:</b> salve seus dados e restaure em outro aparelho.</li></ul></details>
-    <details><summary>Seus dados e privacidade</summary><p>Seus registros ficam só no seu aparelho, e ninguém os vê. O app só conta quantos aparelhos já o usaram, sem coletar nome, localização ou qualquer dado pessoal.</p><p><b>Atenção:</b> se você limpar o navegador ou trocar de celular, os dados se perdem. Faça backup com frequência.</p></details>
+    <details><summary>Seus dados e privacidade</summary><p>Seus registros ficam só no seu aparelho, e ninguém os vê. O app só conta quantos aparelhos já o usaram e quantas vezes foi aberto, sem coletar nome, localização ou qualquer dado pessoal.</p><p><b>Atenção:</b> se você limpar o navegador ou trocar de celular, os dados se perdem. Faça backup com frequência.</p></details>
     <details><summary>Instalar no celular</summary><p><b>Android (Chrome):</b> toque em ⋮ e em <i>Instalar app</i>.</p><p><b>iPhone (Safari):</b> toque em Compartilhar e em <i>Adicionar à Tela de Início</i>.</p></details>
-    <div id="cnw" hidden><div style="display:flex;align-items:center;justify-content:space-between;border:2px solid var(--accent);background:var(--card);border-radius:14px;padding:16px;margin:10px 0 0"><span>Usuários do app</span><b id="cn" style="font-size:1.4rem;color:var(--accent)">—</b></div></div>
+    <div id="cnw" hidden><div style="border:2px solid var(--accent);background:var(--card);border-radius:14px;padding:4px 16px;margin:10px 0 0">
+      <div class="cr3"><span>Usuários do app</span><b id="cn">—</b></div>
+      <div class="cr3"><span>Visitas hoje</span><b id="cv1">—</b></div>
+      <div class="cr3"><span>Visitas totais</span><b id="cv2">—</b></div></div></div>
     <div style="text-align:center;font-size:.8rem;margin-top:14px;color:var(--mute)">Versão 1.1 · atualizado em outubro de 2026</div>
   </div>
 </section>
@@ -342,7 +357,7 @@ function report(list){
     t+=list.map(r=>`${r.title||'Sem título'} (${dt(r.createdAt)}): ${fmt(calc(r.qty).total)}`).join('\n')+'\n\n'}
   const sec=(name,l2,qn,vn)=>{const rs=l2.filter(([v])=>m[v]);
     return `<tr class="hd"><th>${name}:</th><th>Quantidade</th><th>Valor</th></tr>`+
-    (rs.length?rs.map(([v])=>`<tr><td>${fmt(v)}</td><td>${m[v]}</td><td>${fmt(m[v]*v)}</td></tr>`).join(''):'<tr><td colspan="3">Nada contado.</td></tr>')+
+    (rs.length?rs.map(([v,cl])=>`<tr><td><span class="rv"><span class="${name==='Notas'?'rn':'rc'}" style="background:${cl}">${name==='Notas'?v/100:(v>=100?1:v)}</span>${fmt(v)}</span></td><td>${m[v]}</td><td>${fmt(m[v]*v)}</td></tr>`).join(''):'<tr><td colspan="3">Nada contado.</td></tr>')+
     `<tr class="tt"><td>Total em ${name}</td><td>${qn}</td><td>${fmt(vn)}</td></tr>`};
   h+=`<h3>${one?'Detalhamento':'Detalhamento consolidado'}</h3><table class="rt">`+sec('Notas',NOTES,c.cn,c.sn)+sec('Moedas',COINS,c.cc,c.sc)+`<tr class="tg"><td>Total Geral</td><td>${c.cn+c.cc}</td><td>${fmt(c.total)}</td></tr></table>`;
   const tx=(name,l2,qn,vn)=>`${name}:\tQuantidade\tValor\n`+l2.filter(([v])=>m[v]).map(([v])=>`${fmt(v)}\t${m[v]}\t${fmt(m[v]*v)}`).join('\n')+`\nTotal em ${name}\t${qn}\t${fmt(vn)}\n\n`;
@@ -395,10 +410,13 @@ renderList();show('vHome');
 (function(){
   const API='https://countapi.mileshilliard.com/api/v1/',KEY='ddsv_tech_contagem_em_eventos_usuarios';
   const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}return null};
-  const call=op=>fetch(API+op+'/'+KEY,{cache:'no-store'}).then(r=>{if(r.status===404&&op==='get')return{value:0};if(!r.ok)throw 0;return r.json()}).then(d=>{const n=Number(d&&d.value);if(!isFinite(n))throw 0;return n});
+  const KV='ddsv_tech_contagem_em_eventos_visitas',day=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())};
+  const call=(op,key)=>fetch(API+op+'/'+(key||KEY),{cache:'no-store'}).then(r=>{if(r.status===404&&op==='get')return{value:0};if(!r.ok)throw 0;return r.json()}).then(d=>{const n=Number(d&&d.value);if(!isFinite(n))throw 0;return n});
   let tmr=null;
   const hideC=()=>{clearTimeout(tmr);tmr=null;$('cnw').hidden=true};
-  const showC=()=>{$('cn').textContent='—';$('cnw').hidden=false;clearTimeout(tmr);tmr=setTimeout(hideC,3000);call('get').then(n=>{$('cn').textContent=n.toLocaleString('pt-BR')}).catch(()=>{})};
+  const set=(id,key)=>{$(id).textContent='—';call('get',key).then(n=>{$(id).textContent=n.toLocaleString('pt-BR')}).catch(()=>{})};
+  const showC=()=>{$('cnw').hidden=false;clearTimeout(tmr);tmr=setTimeout(hideC,3000);set('cn');set('cv1',KV+'_'+day());set('cv2',KV)};
+  try{if(sessionStorage.getItem('contagem-visita')!=='1'){sessionStorage.setItem('contagem-visita','1');call('hit',KV).catch(()=>{});call('hit',KV+'_'+day()).catch(()=>{})}}catch(e){}
   try{if(ls('contagem-contou')!=='1')call('hit').then(()=>ls('contagem-contou','1')).catch(()=>{})}catch(e){}
   try{new MutationObserver(()=>{if($('vAbout').hidden)hideC()}).observe($('vAbout'),{attributes:true,attributeFilter:['hidden']})}catch(e){}
   let taps=0,last=0;
